@@ -34,8 +34,9 @@ def makeTerms2Articles(file):
     with open(file, 'r') as f:
         data = json.load(f)
         for db in db_list:
-            for term in data[db]:
-                terms.append(term)
+            if(db in data):
+                for term in data[db]:
+                    terms.append(term)
     
     articles = []
     
