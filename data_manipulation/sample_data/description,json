@@ -1,0 +1,20 @@
+{
+    "is_a": [
+        {
+            "id": "GO:0034109",
+            "name": "homotypic cell-cell adhesion"
+        }
+    ],
+    "down_info": {
+        "is_a": [
+            {
+                "id": "GO:0050678",
+                "name": "regulation of epithelial cell proliferation"
+            }
+        ],
+        "name": "regulation of endothelial cell proliferation",
+        "def": "\"Any process that modulates the frequency, rate, or extent of endothelial cell proliferation.\" [GOC:add]"
+    },
+    "name": "platelet aggregation",
+    "def": "\"The adhesion of one platelet to one or more other platelets via adhesion molecules.\" [GOC:BHF, GOC:vk]"
+}
