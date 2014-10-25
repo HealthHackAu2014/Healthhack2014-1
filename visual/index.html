@@ -80,8 +80,8 @@ rect.parent,
       <p id="chart">
     </div>  
     <div id="articles" class="col-md-6">
-      <pre>asdflkjahsdflaksdhflakjsdfalskdjfhalksdjalksjvbnalkfbjvaslkdjbslkdjb</pre>
-      <h2>Found articles</h2>
+      <div id="gen_desc">
+      </div>
     </div>   
   </div>
 </div>    
@@ -135,7 +135,7 @@ grandparent.append("text")
     .attr("y", 6 - margin.top)
     .attr("dy", ".75em");
 
-d3.json("flare.json", function(root) {
+d3.json("final_test.json", function(root) {
   initialize(root);
   accumulate(root);
   layout(root);
@@ -218,8 +218,22 @@ d3.json("flare.json", function(root) {
         .text(function(d) { return d.name; })
         .call(text);
 
+    function  populateGenDescription(d) {
+       d3.select("#gen_desc").selectAll("pre").remove();
+       d3.select("#gen_desc")
+        .selectAll("pre")
+        .data([d])
+        .enter()
+        .append("pre")
+        .text(function(d) { 
+          return d.description; 
+        });
+    }
+
     function  displayArticles(d) {
+      populateGenDescription(d)
       if (d.articles) {
+        d3.select("#articles").selectAll("p").remove();
         d3.select("#articles").call(list, d.articles);
       }
     }
@@ -230,7 +244,6 @@ d3.json("flare.json", function(root) {
         .enter()
         .append("p")
         .text(function(d) { 
-          console.log(d)
           return d.link; 
         });
     }
