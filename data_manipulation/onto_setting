@@ -1,0 +1,17 @@
+{  
+   "ontos":[  
+      {  
+         "name":"go",
+         "file":"ontologies/go.obo.txt"
+      },
+      {  
+         "name":"disease",
+         "file":"ontologies/doid.obo.txt"
+      }
+   ],
+   "key":"id",
+   "name":"name",
+   "def":"def",
+   "parent":"is_a",
+   "block_delimiter":"[Term]"
+}
