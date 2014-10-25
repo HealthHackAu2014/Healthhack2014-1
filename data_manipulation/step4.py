@@ -2,14 +2,18 @@ __author__ = 'chunxiao'
 
 import json
 import requests
+import os
 
 base_url = "http://129.94.136.200/"
 pubmed_api = "pubmed.json?ids="
+
+local_article_cache = "sample_data/local_articles.json"
+
 step1_results = ["sample_data/up.json", "sample_data/down.json"]
 
 db_list = ['GO-BP','GO-MF','GO-CC','Wiki','Disease']
 
-# from pprint import pprint
+from pprint import pprint
 
 def makeJsonCall(id):
     if isinstance(id, list):
@@ -20,6 +24,12 @@ def makeJsonCall(id):
     return response.json()
 
 def makeTerms2Articles(file):
+    if(os.path.exists(local_article_cache)):
+        with open(local_article_cache, 'r') as f:
+            local_articles = json.load(f)
+    else:
+        local_articles = {}
+    #pprint(local_articles)
     terms = []
     with open(file, 'r') as f:
         data = json.load(f)
@@ -36,7 +46,11 @@ def makeTerms2Articles(file):
     terms2articles = {}
 
     for article in articles:
-        data = makeJsonCall(article)
+        if(str(article) in local_articles):
+            data = local_articles[str(article)]
+        else: 
+            data = makeJsonCall(article)
+            local_articles[article] = data
         for db in db_list:
             if(db in data):
                 for term in data[db]:
@@ -48,6 +62,9 @@ def makeTerms2Articles(file):
 
     with open(file+".terms2articles.json", 'w+') as f:
         json.dump(terms2articles, f, indent=4,  separators=(',',':'))
+    with open(local_article_cache, 'w') as f:
+        json.dump(local_articles, f, indent=4,  separators=(',',':'))
+    
 
 for file in step1_results:
     makeTerms2Articles(file)
