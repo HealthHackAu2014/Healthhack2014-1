@@ -79,9 +79,10 @@ rect.parent,
     <div class="col-md-6">
       <p id="chart">
     </div>  
-    <div id="articles" class="col-md-6">
+    <div class="col-md-6">
       <div id="gen_desc">
       </div>
+      <ul id="articles"></ul>
     </div>   
   </div>
 </div>    
@@ -199,6 +200,7 @@ d3.json("final_test.json", function(root) {
         .on("click", transition)
 
     g.filter(function(d) { return !d._children; })
+        .on("mouseover", displayArticles)    
         .on("click", displayArticles)    
 
     g.selectAll(".child")
@@ -219,6 +221,15 @@ d3.json("final_test.json", function(root) {
         .call(text);
 
     function  populateGenDescription(d) {
+       d3.select("#gen_desc").selectAll("h1").remove();
+       d3.select("#gen_desc")
+        .selectAll("h1")
+        .data([d])
+        .enter()
+        .append("h1")
+        .text(function(d) { 
+          return d.name; 
+        });
        d3.select("#gen_desc").selectAll("pre").remove();
        d3.select("#gen_desc")
         .selectAll("pre")
@@ -233,18 +244,20 @@ d3.json("final_test.json", function(root) {
     function  displayArticles(d) {
       populateGenDescription(d)
       if (d.articles) {
-        d3.select("#articles").selectAll("p").remove();
         d3.select("#articles").call(list, d.articles);
       }
     }
 
     function list(ul, data) {
-      ul.selectAll("p")
+      ul.selectAll("li").remove();
+      ul.selectAll("li")
         .data(data)
         .enter()
-        .append("p")
+        .append("li")
+        .append("a")
+        .attr("href", function(d) {return d.url})
         .text(function(d) { 
-          return d.link; 
+          return d.title; 
         });
     }
 
