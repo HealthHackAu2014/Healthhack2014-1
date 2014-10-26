@@ -11,6 +11,9 @@ local_article_cache = "sample_data/local_articles.json"
 
 step1_results = ["sample_data/up.json", "sample_data/down.json"]
 
+compare_result = "sample_data/compare.json"
+
+group_list = ['group1', 'group2', 'common']
 db_list = ['GO-BP','GO-MF','GO-CC','Wiki','Disease']
 
 from pprint import pprint
@@ -24,21 +27,25 @@ def makeJsonCall(id):
     return response.json()
 
 # for all terms in an article, accumulate all counts of these terms from the 
-# ensembl.json result, and use this sum for article weights
+# ensembl.json result in group1 or group2 or common, 
+# and use this sum for article weights
 def getArticleWeight(query_terms, article_json):
-    count = 0;
+    count = {}
+    for group in group_list:
+        count[group] = 0;
     for db in db_list:
         if(db in article_json):
             for term in article_json[db]:
                 if(term in query_terms):
-                    count += query_terms[term]
+                    count[query_terms[term][0]] += query_terms[term][1]
     return count
 
-# multiply article weight with the appreance count of the term in the article 
+# multiply article weight in the group which the term belongs to 
+# with the appreance count of the term in the article 
 def getArticleWeightPerTerm(article_weight, term, query_terms):
-    return article_weight * query_terms[term]
+    return article_weight[query_terms[term][0]] * query_terms[term][1]
 
-def makeTerms2Articles(file):
+def makeTerms2Articles(step1_results, compare_result):
     if(os.path.exists(local_article_cache)):
         with open(local_article_cache, 'r') as f:
             local_articles = json.load(f)
@@ -46,18 +53,23 @@ def makeTerms2Articles(file):
         local_articles = {}
 
     terms = {}
-    with open(file, 'r') as f:
+    with open(compare_result, 'r') as f:
         data = json.load(f)
-        for db in db_list:
-            if(db in data):
-                for term in data[db]:
-                    terms[term] = data[db][term]
-    
+        for group in group_list:
+            if(group in data):
+                for db in db_list:
+                    if(db in data[group]):
+                        for term in data[group][db]:
+                            terms[term] = (group, data[group][db][term])
+    #pprint(terms)
+
     articles = {}
-    with open(file, 'r') as f:
-        data = json.load(f)
-        for article in data['ids']:
-            articles[article] = 0;
+    for file in step1_results:
+        with open(file, 'r') as f:
+            data = json.load(f)
+            for article in data['ids']:
+                articles[article] = 0;
+    #pprint(articles)
 
     terms2articles = {}
     for article in articles:
@@ -79,13 +91,13 @@ def makeTerms2Articles(file):
                         else:
                             terms2articles[term] = [(article, 
                                                      getArticleWeightPerTerm(articles[article], term, terms))]
+
     for term in terms2articles:
         terms2articles[term] = sorted(terms2articles[term], key=(lambda article: article[1]), reverse=True)
  
-    with open(file+".terms2articles_count.json", 'w+') as f:
+    with open(compare_result+".t2a.json", 'w+') as f:
         json.dump(terms2articles, f, indent=4,  separators=(',',':'))
     with open(local_article_cache, 'w') as f:
         json.dump(local_articles, f, indent=4,  separators=(',',':'))
 
-for file in step1_results:
-    makeTerms2Articles(file)
+makeTerms2Articles(step1_results, compare_result)

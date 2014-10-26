@@ -61,8 +61,8 @@ class groupTerms(object):
 			# print "\ncommon:\n", common
 		# for key in final_output:
 		# 	print key, len(final_output[key])
-		# with open('try.txt', 'w') as f:
-		# 	f.write(json.dumps(final_output))
+		with open('sample_data/compare.json', 'w') as f:
+			json.dump(final_output, f, indent=4,  separators=(',',':'))
 		return json.dumps(final_output)
 
 	
