@@ -24,7 +24,19 @@ def makeJsonCall(id):
     return response.json()
 
 # for all terms in an article, accumulate all counts of these terms from the 
-# ensembl.json result, and use this sum to rank articles 
+# ensembl.json result, and use this sum for article weights
+def getArticleWeight(query_terms, article_json):
+    count = 0;
+    for db in db_list:
+        if(db in article_json):
+            for term in article_json[db]:
+                if(term in query_terms):
+                    count += query_terms[term]
+    return count
+
+# multiply article weight with the appreance count of the term in the article 
+def getArticleWeightPerTerm(article, term, article_weights, query_terms):
+    return article_weights[article] * query_terms[term]
 
 def makeTerms2Articles(file):
     if(os.path.exists(local_article_cache)):
@@ -32,7 +44,7 @@ def makeTerms2Articles(file):
             local_articles = json.load(f)
     else:
         local_articles = {}
-    #pprint(local_articles)
+
     terms = {}
     with open(file, 'r') as f:
         data = json.load(f)
@@ -42,14 +54,12 @@ def makeTerms2Articles(file):
                     terms[term] = data[db][term]
     
     articles = {}
-    
     with open(file, 'r') as f:
         data = json.load(f)
         for article in data['ids']:
-            articles[article] = 0
-    
-    terms2articles = {}
+            articles[article] = getArticleWeight(terms, data)
 
+    terms2articles = {}
     for article in articles:
         if(str(article) in local_articles):
             data = local_articles[str(article)]
@@ -57,22 +67,16 @@ def makeTerms2Articles(file):
             data = makeJsonCall(article)
             local_articles[article] = data
 
-        count = 0;
-        for db in db_list:
-            if(db in data):
-                for term in data[db]:
-                    if(term in terms):
-                        count += terms[term]
-        articles[article] = count
-
         for db in db_list:
             if(db in data):
                 for term in data[db]:
                     if(term in terms):
                         if(term in terms2articles):
-                            terms2articles[term].append((article, articles[article]))
+                            terms2articles[term].append((article, 
+                                                         getArticleWeightPerTerm(article, term, articles, terms)))
                         else:
-                            terms2articles[term] = [(article, articles[article])]
+                            terms2articles[term] = [(article, 
+                                                     getArticleWeightPerTerm(article, term, articles, terms))]
     for term in terms2articles:
         terms2articles[term] = sorted(terms2articles[term], key=(lambda article: article[1]), reverse=True)
  
