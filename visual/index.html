@@ -78,6 +78,7 @@ rect.parent,
   <div class="row">
     <div class="col-md-6">
       <p id="chart">
+      <div id="articleAbstract"></div>
     </div>  
     <div class="col-md-6">
       <div id="gen_desc">
@@ -249,16 +250,46 @@ d3.json("final_test.json", function(root) {
     }
 
     function list(ul, data) {
+      var sortedData = data.sort(function(a,b){
+            return parseInt(b.date.replace(" ", "")) - parseInt(a.date.replace(" ", ""))
+          }).slice(0,10)
+
       ul.selectAll("li").remove();
-      ul.selectAll("li")
-        .data(data)
+      var li = ul.selectAll("li")
+        .data(sortedData)
         .enter()
         .append("li")
+      
+
+      li.append("div")
+        .attr("class", d.url)
+        .append("h3")
+        .on("mouseover", showArticleAbstract)
         .append("a")
         .attr("href", function(d) {return d.url})
         .text(function(d) { 
-          return d.title; 
+          return d.articletitle; 
         });
+
+      li.append("p")
+        .text(function(d) { 
+          return "Author: " + d.author; 
+        });  
+      li.append("p")
+        .text(function(d) { 
+          return "Journal: " + d.title; 
+        });
+      li.append("p")
+        .text(function(d) { 
+          return "Published: " + d.date; 
+        });
+    }
+
+    function showArticleAbstract(article){
+      d3.select("#articleAbstract").selectAll("p").remove()
+      d3.select("#articleAbstract")
+        .append("p")
+        .text(article.abstracttext)
     }
 
     function transition(d) {
